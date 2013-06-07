@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html><!--HTML5 doctype-->
+<html>
+<head>
+<title>pushyTruck</title>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<script type="text/javascript" charset="utf-8" src="http://localhost:58888/_appMobi/appmobi.js"></script>
+<script type="text/javascript" charset="utf-8" src="http://localhost:58888/_appMobi/xhr.js"></script>
+
+<script type="text/javascript">
+	/* This code is used to run as soon as appMobi activates */
+	var onDeviceReady=function() {
+		AppMobi.device.hideSplashScreen();
+		AppMobi.notification.checkPushUser(AppMobi.device.uuid, AppMobi.device.uuid);
+	};
+	document.addEventListener("appMobi.device.ready",onDeviceReady,false);
+
+	/* This code runs when notifications are registered */
+	var didAdd = false;
+	var notificationsRegistered=function(event) {
+		if(event.success === false) {
+			if (didAdd === false) {
+				didAdd = true;
+				AppMobi.notification.addPushUser(AppMobi.device.uuid, AppMobi.device.uuid, 'no@email.com');
+				return;
+			}
+			return;
+		}
+	}
+	document.addEventListener("appMobi.notification.push.enable",notificationsRegistered,false);
+
+	/* This code runs when a push message is received */
+	var receivedPush = function(){
+		var myNotifications=AppMobi.notification.getNotificationList();
+		var len=myNotifications.length;
+		if(len > 0) {
+			for(i=0; i < len; i++) {
+				msgObj=AppMobi.notification.getNotificationData(myNotifications[i]);
+				try{
+					if(typeof msgObj == "object" && msgObj.id == myNotifications[i]){
+						//@TODO
+						AppMobi.notification.alert(msgObj.msg + "\n" + msgObj.data + "\n" + msgObj.userkey,"pushMobi Message","OK");
+						AppMobi.notification.readPushNotifications(msgObj.id);
+						AppMobi.notification.deletePushNotifications(msgObj.id);
+						return;
+					}
+				}catch(e){
+					AppMobi.notification.readPushNotifications(msgObj.id);
+					AppMobi.notification.deletePushNotifications(msgObj.id);
+				}
+			}
+		}
+	};
+	document.addEventListener("appMobi.notification.push.receive", receivedPush, false);
+</script>
+</head>
+<body>
+</body>
+</html>
